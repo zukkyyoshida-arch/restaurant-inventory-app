@@ -83,7 +83,7 @@ export const useStore = create<StoreState>()(
       })
     }),
     {
-      name: 'loss-zero-storage', // LocalStorageのキー
+      name: 'loss-zero-storage-v2', // LocalStorageのキーを変更してキャッシュをクリア
     }
   )
 );

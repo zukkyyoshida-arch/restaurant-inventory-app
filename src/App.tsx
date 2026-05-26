@@ -23,7 +23,7 @@ const getWeatherInfo = (code: number) => {
 // Dashboard Component
 // ==========================================
 const Dashboard = () => {
-  const { products, currentInventory, orderQuantities, updateOrderQuantity, calculateRecommendedOrder, clearOrders, appSettings } = useStore();
+  const { products, currentInventory, orderQuantities, updateOrderQuantity, calculateRecommendedOrder, clearOrders, appSettings, saveOrderHistory } = useStore();
   const [weather, setWeather] = useState<WeatherData | null>(null);
   const [loading, setLoading] = useState(true);
 
@@ -51,12 +51,21 @@ const Dashboard = () => {
   };
 
   const handleSubmitOrder = () => {
-    const orderCount = Object.keys(orderQuantities).length;
-    if (orderCount === 0) {
-      alert("発注する商品がありません。数量を＋で追加してください。");
-      return;
+    // 現在の発注リストから HistoryItem 配列を作成
+    const historyItems = products
+      .filter(p => orderQuantities[p.id] > 0)
+      .map(p => ({
+        productId: p.id,
+        productName: p.name,
+        quantity: orderQuantities[p.id],
+        cost: p.unitPrice || 0
+      }));
+    
+    if (historyItems.length > 0) {
+      saveOrderHistory(historyItems);
     }
-    alert(`🛒 業者システムへ発注データを送信しました！（${orderCount}件）`);
+
+    alert("各仕入れ業者への発注データを送信しました。");
     clearOrders();
   };
 
@@ -369,6 +378,63 @@ const ProductMaster = () => {
 };
 
 // ==========================================
+// History Component
+// ==========================================
+const History = () => {
+  const { orderHistory, appSettings } = useStore();
+
+  const totalAmount = orderHistory.reduce((sum, h) => sum + h.totalAmount, 0);
+
+  // 簡易的な目標金額のモック（売上想定200万円として、設定した目標原価率から予算算出）
+  const assumedSales = 2000000; 
+  const targetBudget = assumedSales * (appSettings.targetCostRate / 100);
+  const isWarning = totalAmount > targetBudget * 0.8;
+
+  return (
+    <div className="history" style={{ paddingBottom: '2rem' }}>
+      <h2 style={{ fontSize: '1.125rem', marginBottom: '1rem' }}>月間リザルト ＆ 発注履歴</h2>
+      
+      <div className="card" style={{ marginBottom: '1.5rem', backgroundColor: isWarning ? 'var(--danger-bg)' : 'var(--surface-color)', border: isWarning ? '1px solid var(--danger-color)' : 'none' }}>
+        <h3 style={{ fontSize: '1rem', marginBottom: '0.5rem', color: isWarning ? 'var(--danger-color)' : 'var(--text-primary)' }}>
+          {isWarning ? '⚠️ 目標予算に近づいています' : '✅ 順調なペースです'}
+        </h3>
+        <p style={{ fontSize: '0.875rem', color: 'var(--text-secondary)', marginBottom: '1rem' }}>
+          今月の目標原価率: {appSettings.targetCostRate}% (予算目安: {targetBudget.toLocaleString()}円)
+        </p>
+        <div style={{ fontSize: '2rem', fontWeight: 700, color: isWarning ? 'var(--danger-color)' : 'var(--primary-color)' }}>
+          ¥{totalAmount.toLocaleString()}
+        </div>
+        <p style={{ fontSize: '0.75rem', color: 'var(--text-secondary)' }}>累計発注金額</p>
+      </div>
+
+      <h3 style={{ fontSize: '1rem', marginBottom: '1rem' }}>発注履歴</h3>
+      {orderHistory.length === 0 ? (
+        <div className="card" style={{ textAlign: 'center', padding: '2rem' }}>
+          <p style={{ color: 'var(--text-secondary)' }}>発注履歴がありません</p>
+        </div>
+      ) : (
+        orderHistory.map((history) => (
+          <div key={history.id} className="card" style={{ padding: '1rem', marginBottom: '1rem' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.5rem', borderBottom: '1px solid var(--border-color)', paddingBottom: '0.5rem' }}>
+              <span style={{ fontWeight: 600, fontSize: '0.875rem' }}>
+                {new Date(history.date).toLocaleString('ja-JP', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })}
+              </span>
+              <span style={{ fontWeight: 700, color: 'var(--primary-color)' }}>¥{history.totalAmount.toLocaleString()}</span>
+            </div>
+            {history.items.map((item, idx) => (
+              <div key={idx} style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.875rem', color: 'var(--text-secondary)', marginTop: '0.25rem' }}>
+                <span>{item.productName} × {item.quantity}</span>
+                <span>¥{(item.cost * item.quantity).toLocaleString()}</span>
+              </div>
+            ))}
+          </div>
+        ))
+      )}
+    </div>
+  );
+};
+
+// ==========================================
 // Settings Component
 // ==========================================
 const Settings = ({ setActiveTab }: { setActiveTab: (tab: string) => void }) => {
@@ -514,6 +580,7 @@ function App() {
       <main className="main-content">
         {activeTab === 'dashboard' && <Dashboard />}
         {activeTab === 'inventory' && <InventoryInput setActiveTab={setActiveTab} />}
+        {activeTab === 'history' && <History />}
         {activeTab === 'products' && <ProductMaster />}
         {activeTab === 'settings' && <Settings setActiveTab={setActiveTab} />}
       </main>
@@ -523,8 +590,8 @@ function App() {
           className={`nav-item ${activeTab === 'dashboard' ? 'active' : ''}`}
           onClick={() => setActiveTab('dashboard')}
         >
-          <span className="nav-icon">📊</span>
-          ダッシュボード
+          <span className="nav-icon">🏠</span>
+          ホーム
         </button>
         <button 
           className={`nav-item ${activeTab === 'inventory' ? 'active' : ''}`}
@@ -534,11 +601,18 @@ function App() {
           在庫入力
         </button>
         <button 
+          className={`nav-item ${activeTab === 'history' ? 'active' : ''}`}
+          onClick={() => setActiveTab('history')}
+        >
+          <span className="nav-icon">📊</span>
+          履歴
+        </button>
+        <button 
           className={`nav-item ${activeTab === 'products' ? 'active' : ''}`}
           onClick={() => setActiveTab('products')}
         >
           <span className="nav-icon">📋</span>
-          商品マスタ
+          マスタ
         </button>
         <button 
           className={`nav-item ${activeTab === 'settings' ? 'active' : ''}`}

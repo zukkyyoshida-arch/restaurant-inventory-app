@@ -37,12 +37,14 @@ body {
 .app-container {
   max-width: 480px;
   margin: 0 auto;
-  min-height: 100vh;
+  height: 100vh;
+  height: 100dvh; /* スマホのアドレスバー考慮 */
   background-color: var(--bg-color);
   position: relative;
   display: flex;
   flex-direction: column;
   box-shadow: 0 0 20px rgba(0,0,0,0.05);
+  overflow: hidden;
 }
 
 .header {
@@ -66,16 +68,15 @@ body {
 .main-content {
   flex: 1;
   padding: 1rem;
-  padding-bottom: 5rem; /* bottom nav のスペース */
   overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
 }
 
 /* Bottom Navigation */
 .bottom-nav {
-  position: absolute;
-  bottom: 0;
-  left: 0;
-  right: 0;
+  position: relative;
+  flex-shrink: 0;
+  z-index: 20;
   background-color: var(--surface-color);
   border-top: 1px solid var(--border-color);
   display: flex;

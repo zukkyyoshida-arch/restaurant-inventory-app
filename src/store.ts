@@ -27,6 +27,13 @@ export interface AppSettings {
   targetCostRate: number;
 }
 
+export interface OrderHistoryItem {
+  id: string;
+  date: string;
+  items: { productId: string; productName: string; quantity: number; cost: number }[];
+  totalAmount: number;
+}
+
 interface StoreState {
   products: Product[];
   currentInventory: Record<string, number>;
@@ -40,6 +47,8 @@ interface StoreState {
   resetAll: () => void;
   appSettings: AppSettings;
   updateSettings: (newSettings: Partial<AppSettings>) => void;
+  orderHistory: OrderHistoryItem[];
+  saveOrderHistory: (items: { productId: string; productName: string; quantity: number; cost: number }[]) => void;
 }
 
 export const useStore = create<StoreState>()(
@@ -73,6 +82,9 @@ export const useStore = create<StoreState>()(
         autoOrderTime: '15:00',
         targetCostRate: 28,
       },
+      
+      // 発注履歴
+      orderHistory: [],
       
       updateInventory: (productId, quantity) => set((state) => ({
         currentInventory: { ...state.currentInventory, [productId]: Math.max(0, quantity) }
@@ -108,14 +120,26 @@ export const useStore = create<StoreState>()(
       updateSettings: (newSettings) => set((state) => ({
         appSettings: { ...state.appSettings, ...newSettings }
       })),
+      
+      saveOrderHistory: (items) => set((state) => {
+        const totalAmount = items.reduce((sum, item) => sum + (item.cost * item.quantity), 0);
+        const newHistory: OrderHistoryItem = {
+          id: Date.now().toString(),
+          date: new Date().toISOString(),
+          items,
+          totalAmount
+        };
+        return { orderHistory: [newHistory, ...state.orderHistory] };
+      }),
 
       resetAll: () => set({
         currentInventory: {},
-        orderQuantities: {}
+        orderQuantities: {},
+        orderHistory: []
       })
     }),
     {
-      name: 'loss-zero-storage-v6', // LocalStorageのキーを変更してキャッシュをクリア
+      name: 'loss-zero-storage-v7', // LocalStorageのキーを変更してキャッシュをクリア
     }
   )
 );

@@ -12,11 +12,15 @@ export interface Product {
 
 interface StoreState {
   products: Product[];
-  currentInventory: Record<string, number>; // productId -> quantity
-  orderQuantities: Record<string, number>; // productId -> order quantity
+  currentInventory: Record<string, number>;
+  orderQuantities: Record<string, number>;
   updateInventory: (productId: string, quantity: number) => void;
   updateOrderQuantity: (productId: string, quantity: number) => void;
   calculateRecommendedOrder: (productId: string) => number;
+  addProduct: (product: Omit<Product, 'id'>) => void;
+  editProduct: (id: string, name: string) => void;
+  clearOrders: () => void;
+  resetAll: () => void;
 }
 
 export const useStore = create<StoreState>()(
@@ -55,11 +59,27 @@ export const useStore = create<StoreState>()(
         const currentQty = state.currentInventory[productId] || 0;
         if (!product) return 0;
         
-        // 簡易的な計算式: (基準在庫 - 現在の在庫)
-        // ※実際には天候や昨年の実績などを加味する
         const recommended = product.baseQuantity - currentQty;
         return recommended > 0 ? recommended : 0;
-      }
+      },
+      
+      addProduct: (newProduct) => set((state) => {
+        const newId = `p${Date.now()}`;
+        return {
+          products: [...state.products, { ...newProduct, id: newId }]
+        };
+      }),
+      
+      editProduct: (id, name) => set((state) => ({
+        products: state.products.map(p => p.id === id ? { ...p, name } : p)
+      })),
+      
+      clearOrders: () => set({ orderQuantities: {} }),
+      
+      resetAll: () => set({
+        currentInventory: {},
+        orderQuantities: {}
+      })
     }),
     {
       name: 'loss-zero-storage', // LocalStorageのキー

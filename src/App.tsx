@@ -60,7 +60,6 @@ const Dashboard = () => {
   };
 
   const handleSubmitOrder = () => {
-    // 現在の発注リストから HistoryItem 配列を作成
     const historyItems = products
       .filter(p => orderQuantities[p.id] > 0)
       .map(p => ({
@@ -70,11 +69,13 @@ const Dashboard = () => {
         cost: p.unitPrice || 0
       }));
     
-    if (historyItems.length > 0) {
-      saveOrderHistory(historyItems);
+    if (historyItems.length === 0) {
+      alert("発注する商品がありません。数量を「＋」ボタンで追加してから発注してください。");
+      return;
     }
 
-    alert("各仕入れ業者への発注データを送信しました。");
+    saveOrderHistory(historyItems);
+    alert(`各仕入れ業者へ発注データ（${historyItems.length}件）を送信しました。`);
     clearOrders();
   };
 

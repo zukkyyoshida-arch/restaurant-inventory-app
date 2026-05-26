@@ -16,6 +16,7 @@ export interface Product {
   baseQuantity: number; // 基準在庫
   lastWeekConsumption: number; // 先週同曜日の消費量
   expiresInDays?: number; // 消費期限までの日数 (nullなら無し)
+  isCritical?: boolean; // 絶対に切らしてはいけない重要アイテム
 }
 
 export interface AppSettings {
@@ -25,6 +26,13 @@ export interface AppSettings {
   autoOrderEnabled: boolean;
   autoOrderTime: string;
   targetCostRate: number;
+  customEvents: string;
+  cookingEquipments: string[];
+  snsAutoPost: boolean;
+  displayLanguage: 'ja' | 'en' | 'vi' | 'zh';
+  voiceInputEnabled: boolean;
+  sunnyDaySalesTarget: number;
+  rainyDaySalesTarget: number;
 }
 
 export interface OrderHistoryItem {
@@ -55,11 +63,11 @@ export const useStore = create<StoreState>()(
   persist(
     (set, get) => ({
       products: [
-        { id: 'p1', name: '餃子の皮 (大判)', officialName: '特製餃子皮 Lサイズ', category: '食材', storageLocation: '冷蔵室A', supplier: '〇〇製麺', spec: '100枚/PC', unitPrice: 350, leadTimeDays: 1, reorderPoint: 5, unit: 'PC', baseQuantity: 20, lastWeekConsumption: 18, expiresInDays: 3 },
+        { id: 'p1', name: '餃子の皮 (大判)', officialName: '特製餃子皮 Lサイズ', category: '食材', storageLocation: '冷蔵室A', supplier: '〇〇製麺', spec: '100枚/PC', unitPrice: 350, leadTimeDays: 1, reorderPoint: 5, unit: 'PC', baseQuantity: 20, lastWeekConsumption: 18, expiresInDays: 3, isCritical: true },
         { id: 'p2', name: '豚ひき肉', officialName: '国産豚挽肉 (粗挽き)', category: '肉類', storageLocation: '冷蔵室B', supplier: 'プレコフーズ', spec: '2kg/PC', unitPrice: 2400, leadTimeDays: 1, reorderPoint: 3, unit: 'PC', baseQuantity: 10, lastWeekConsumption: 9, expiresInDays: 2 },
         { id: 'p3', name: '大根 (おでん用)', officialName: '千葉産 大根', category: '野菜', storageLocation: '野菜室', supplier: '八百屋', spec: '1本', unitPrice: 180, leadTimeDays: 1, reorderPoint: 5, unit: '本', baseQuantity: 10, lastWeekConsumption: 8 },
         { id: 'p4', name: '牛すじ', officialName: '国産 牛すじ肉', category: '肉類', storageLocation: '冷凍庫', supplier: 'プレコフーズ', spec: '1kg/PC', unitPrice: 1200, leadTimeDays: 1, reorderPoint: 2, unit: 'PC', baseQuantity: 5, lastWeekConsumption: 4 },
-        { id: 'p5', name: 'サントリー 翠 (SUI)', officialName: 'サントリー 翠 (SUI) 1.8L', category: '飲料', storageLocation: '酒庫', supplier: '(株)カクヤス', spec: '1.8L/本', unitPrice: 3200, leadTimeDays: 0, reorderPoint: 3, unit: '本', baseQuantity: 8, lastWeekConsumption: 10 },
+        { id: 'p5', name: 'サントリー 翠 (SUI)', officialName: 'サントリー 翠 (SUI) 1.8L', category: '飲料', storageLocation: '酒庫', supplier: '(株)カクヤス', spec: '1.8L/本', unitPrice: 3200, leadTimeDays: 0, reorderPoint: 3, unit: '本', baseQuantity: 8, lastWeekConsumption: 10, isCritical: true },
         { id: 'p6', name: '炭酸水', officialName: 'ウィルキンソン 炭酸 500ml', category: '飲料', storageLocation: '冷蔵ショーケース', supplier: '(株)カクヤス', spec: '24本/CS', unitPrice: 1800, leadTimeDays: 0, reorderPoint: 2, unit: 'CS', baseQuantity: 4, lastWeekConsumption: 5 },
       ],
       // 現在の在庫数
@@ -81,6 +89,13 @@ export const useStore = create<StoreState>()(
         autoOrderEnabled: false,
         autoOrderTime: '15:00',
         targetCostRate: 28,
+        customEvents: '',
+        cookingEquipments: ['pan', 'pot'], // 中華鍋、鍋
+        snsAutoPost: false,
+        displayLanguage: 'ja',
+        voiceInputEnabled: false,
+        sunnyDaySalesTarget: 150000,
+        rainyDaySalesTarget: 100000,
       },
       
       // 発注履歴
@@ -139,7 +154,7 @@ export const useStore = create<StoreState>()(
       })
     }),
     {
-      name: 'loss-zero-storage-v7', // LocalStorageのキーを変更してキャッシュをクリア
+      name: 'loss-zero-storage-v8', // LocalStorageのキーを変更してキャッシュをクリア
     }
   )
 );

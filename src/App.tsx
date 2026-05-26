@@ -131,6 +131,11 @@ const Dashboard = ({ setActiveTab }: { setActiveTab: (tab: string) => void }) =>
                     <h3 style={{ fontSize: '1.1rem' }}>{p.name} ({p.unit})</h3>
                     <span className="badge badge-warning" style={{ backgroundColor: '#e0e7ff', color: '#4338ca' }}>先週同曜日: {p.lastWeekConsumption}{p.unit}</span>
                   </div>
+                  {p.officialName && (
+                    <p style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', marginTop: '0.2rem' }}>
+                      業者向け名称: {p.officialName}
+                    </p>
+                  )}
                   <p style={{ marginTop: '0.25rem' }}>現在の在庫: {currentInventory[p.id] || 0} (基準: {p.baseQuantity})</p>
                 </div>
                 <div className="item-action" style={{ width: '100%', justifyContent: 'flex-end', borderTop: '1px dashed var(--border-color)', paddingTop: '0.75rem' }}>
@@ -193,9 +198,14 @@ const InventoryInput = ({ setActiveTab }: { setActiveTab: (tab: string) => void 
           const qty = currentInventory[p.id] || 0;
           return (
             <div key={p.id} className="list-item" style={{ padding: '1rem' }}>
-              <div className="item-info">
-                <h3>{p.name} ({p.unit})</h3>
-                <p>昨日: {qty} {p.unit}</p>
+              <div className="item-info" style={{ flex: 1, paddingRight: '1rem' }}>
+                <h3 style={{ fontSize: '1.05rem', marginBottom: '0.25rem' }}>{p.name} ({p.unit})</h3>
+                {p.officialName && (
+                  <p style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', marginBottom: '0.25rem', lineHeight: '1.2' }}>
+                    正式名: {p.officialName}
+                  </p>
+                )}
+                <p style={{ fontSize: '0.875rem' }}>昨日: {qty} {p.unit}</p>
               </div>
               <div className="item-action">
                 <button className="qty-btn" onClick={() => updateInventory(p.id, qty - 1)}>-</button>
@@ -247,9 +257,12 @@ const ProductMaster = () => {
       <div className="card" style={{ padding: '0' }}>
         {products.map((p, idx) => (
           <div key={p.id} className="list-item" style={{ padding: '1rem', borderBottom: idx === products.length - 1 ? 'none' : '1px solid var(--border-color)' }}>
-            <div className="item-info">
-              <h3>{p.name}</h3>
-              <p>単位: {p.unit} / 基準在庫: {p.baseQuantity}</p>
+            <div className="item-info" style={{ paddingRight: '1rem' }}>
+              <h3 style={{ fontSize: '1.05rem' }}>{p.name}</h3>
+              {p.officialName && (
+                <p style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', marginTop: '0.1rem' }}>{p.officialName}</p>
+              )}
+              <p style={{ marginTop: '0.25rem', fontSize: '0.875rem' }}>単位: {p.unit} / 基準在庫: {p.baseQuantity}</p>
             </div>
             <div className="item-action">
               <button className="btn btn-outline" style={{ padding: '0.25rem 0.75rem', fontSize: '0.75rem', width: 'auto' }} onClick={() => handleEdit(p.id, p.name)}>編集</button>

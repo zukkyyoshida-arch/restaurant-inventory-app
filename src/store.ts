@@ -3,7 +3,8 @@ import { persist } from 'zustand/middleware';
 
 export interface Product {
   id: string;
-  name: string;
+  name: string; // 現場での呼び名（例：ポテト）
+  officialName?: string; // 業者向けの正式名称
   unit: string;
   baseQuantity: number; // 基準在庫
   lastWeekConsumption: number; // 先週同曜日の消費量
@@ -26,13 +27,13 @@ interface StoreState {
 export const useStore = create<StoreState>()(
   persist(
     (set, get) => ({
-      // モックの商品マスタデータ
       products: [
-        { id: 'p1', name: 'キャベツ', unit: '玉', baseQuantity: 5, lastWeekConsumption: 5 },
-        { id: 'p2', name: 'トマト', unit: '個', baseQuantity: 30, lastWeekConsumption: 25, expiresInDays: 2 },
+        { id: 'p6', name: 'フライドポテト', officialName: 'ラムウェストン SO1ステルスジュリエンヌ スキンオン', unit: 'PC', baseQuantity: 10, lastWeekConsumption: 8 },
+        { id: 'p1', name: 'キャベツ', officialName: '国産 キャベツ (L玉)', unit: '玉', baseQuantity: 5, lastWeekConsumption: 5 },
+        { id: 'p2', name: 'トマト', officialName: 'カゴメ グリルトマト（ダイスカット）', unit: 'PC', baseQuantity: 30, lastWeekConsumption: 25, expiresInDays: 2 },
         { id: 'p3', name: '玉ねぎ', unit: '個', baseQuantity: 20, lastWeekConsumption: 15 },
-        { id: 'p4', name: 'ビール', unit: '樽', baseQuantity: 3, lastWeekConsumption: 4 },
-        { id: 'p5', name: '鶏もも肉', unit: 'kg', baseQuantity: 5, lastWeekConsumption: 4, expiresInDays: 1 },
+        { id: 'p4', name: '生ビール', officialName: 'アサヒ スーパードライ 樽生 10L', unit: '樽', baseQuantity: 3, lastWeekConsumption: 4 },
+        { id: 'p5', name: 'ピザ生地', officialName: 'ハッコー 生ピザボール', unit: 'C/S', baseQuantity: 5, lastWeekConsumption: 4, expiresInDays: 1 },
       ],
       // 現在の在庫数
       currentInventory: {

@@ -47,7 +47,7 @@ const Dashboard = () => {
   }, []);
 
   const handleSuggestMenu = () => {
-    alert("💡 本日のAI裏メニュー提案:\n\n『鶏もも肉とトマトのガーリック煮込み』\n\n消費期限が近い食材を組み合わせて、ロスを減らしましょう！");
+    alert("💡 本日のAI裏メニュー提案:\n\n『餃子の皮ピザ ＆ ニラ玉おつまみ』\n\n消費期限が近いニラと余った餃子の皮を使って、サクッとおつまみを提供しましょう！");
   };
 
   const handleSubmitOrder = () => {
@@ -92,8 +92,8 @@ const Dashboard = () => {
             </div>
             <p style={{ fontSize: '0.875rem', color: 'var(--text-secondary)' }}>
               {weather.precipitation_probability_max >= 50 
-                ? '明日は雨の確率が高いため、客数が15%減少する見込みです。生鮮食品の発注を抑えることをお勧めします。'
-                : '明日は天候が良いため、通常通りの客足が見込まれます。'}
+                ? '明日の新宿（歌舞伎町）は雨の確率が高いため、客数が15%減少する見込みです。生鮮食品（野菜・ひき肉）の発注を抑えることをお勧めします。'
+                : '明日の新宿（歌舞伎町）は天候が良いため、通常通りの客足が見込まれます。'}
             </p>
           </div>
         ) : (
@@ -411,7 +411,7 @@ const Settings = ({ setActiveTab }: { setActiveTab: (tab: string) => void }) => 
           >
             <option value="office">オフィス街（土日・雨天で客数減）</option>
             <option value="residential">住宅街（雨天でも安定）</option>
-            <option value="tourist">観光地（天候・イベントに大きく依存）</option>
+            <option value="tourist">繁華街・観光地（天候・イベントに大きく依存）</option>
             <option value="other">その他</option>
           </select>
         </div>
@@ -505,9 +505,9 @@ function App() {
   return (
     <div className="app-container">
       <header className="header">
-        <h1>ロスゼロ・マイスター</h1>
+        <h1>KABUKI餃子 - ロスゼロ</h1>
         <div style={{ width: '32px', height: '32px', borderRadius: '50%', backgroundColor: 'var(--border-color)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.2rem' }}>
-          🧑‍🍳
+          🥟
         </div>
       </header>
 

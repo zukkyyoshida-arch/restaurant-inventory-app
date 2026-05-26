@@ -46,12 +46,12 @@ export const useStore = create<StoreState>()(
   persist(
     (set, get) => ({
       products: [
-        { id: 'p6', name: 'フライドポテト', officialName: 'ラムウェストン SO1ステルスジュリエンヌ スキンオン', category: '冷凍食品', storageLocation: '冷凍庫A', supplier: '(株)久世', spec: '4LB・6/PC', unitPrice: 1522, leadTimeDays: 1, reorderPoint: 5, unit: 'PC', baseQuantity: 10, lastWeekConsumption: 8 },
-        { id: 'p1', name: 'キャベツ', officialName: '国産 キャベツ (L玉)', category: '野菜', storageLocation: '冷蔵室', supplier: '八百屋', spec: '1玉', unitPrice: 150, leadTimeDays: 1, reorderPoint: 2, unit: '玉', baseQuantity: 5, lastWeekConsumption: 5 },
-        { id: 'p2', name: 'トマト', officialName: 'カゴメ グリルトマト（ダイスカット）', category: '野菜', storageLocation: '冷蔵室', supplier: '(株)久世', spec: '500g・10/PC', unitPrice: 714, leadTimeDays: 1, reorderPoint: 10, unit: 'PC', baseQuantity: 30, lastWeekConsumption: 25, expiresInDays: 2 },
-        { id: 'p3', name: '玉ねぎ', officialName: '玉ねぎ (L)', category: '野菜', storageLocation: '常温棚', supplier: '八百屋', spec: '1個', unitPrice: 50, leadTimeDays: 1, reorderPoint: 5, unit: '個', baseQuantity: 20, lastWeekConsumption: 15 },
-        { id: 'p4', name: '生ビール', officialName: 'アサヒ スーパードライ 樽生 10L', category: '飲料', storageLocation: '酒庫', supplier: '(株)カクヤス', spec: '10L/樽', unitPrice: 5500, leadTimeDays: 0, reorderPoint: 1, unit: '樽', baseQuantity: 3, lastWeekConsumption: 4 },
-        { id: 'p5', name: 'ピザ生地', officialName: 'ハッコー 生ピザボール', category: '生地', storageLocation: '冷蔵室', supplier: 'プレコフーズ', spec: '150g×12×5・1/C/S', unitPrice: 6195, leadTimeDays: 1, reorderPoint: 2, unit: 'C/S', baseQuantity: 5, lastWeekConsumption: 4, expiresInDays: 1 },
+        { id: 'p1', name: '餃子の皮 (大判)', officialName: '特製餃子皮 Lサイズ', category: '食材', storageLocation: '冷蔵室A', supplier: '〇〇製麺', spec: '100枚/PC', unitPrice: 350, leadTimeDays: 1, reorderPoint: 5, unit: 'PC', baseQuantity: 20, lastWeekConsumption: 18, expiresInDays: 3 },
+        { id: 'p2', name: '豚ひき肉', officialName: '国産豚挽肉 (粗挽き)', category: '肉類', storageLocation: '冷蔵室B', supplier: 'プレコフーズ', spec: '2kg/PC', unitPrice: 2400, leadTimeDays: 1, reorderPoint: 3, unit: 'PC', baseQuantity: 10, lastWeekConsumption: 9, expiresInDays: 2 },
+        { id: 'p3', name: 'キャベツ', officialName: '国産 キャベツ (L玉)', category: '野菜', storageLocation: '野菜室', supplier: '八百屋', spec: '1玉', unitPrice: 150, leadTimeDays: 1, reorderPoint: 5, unit: '玉', baseQuantity: 15, lastWeekConsumption: 12 },
+        { id: 'p4', name: 'ニラ', officialName: '高知産 ニラ', category: '野菜', storageLocation: '野菜室', supplier: '八百屋', spec: '1束', unitPrice: 90, leadTimeDays: 1, reorderPoint: 10, unit: '束', baseQuantity: 30, lastWeekConsumption: 25, expiresInDays: 1 },
+        { id: 'p5', name: '生ビール', officialName: 'アサヒ スーパードライ 樽生 10L', category: '飲料', storageLocation: '酒庫', supplier: '(株)カクヤス', spec: '10L/樽', unitPrice: 5500, leadTimeDays: 0, reorderPoint: 2, unit: '樽', baseQuantity: 5, lastWeekConsumption: 6 },
+        { id: 'p6', name: '冷凍ポテト', officialName: 'ラムウェストン SO1ステルス', category: '冷凍食品', storageLocation: '冷凍庫', supplier: '(株)久世', spec: '4LB', unitPrice: 1522, leadTimeDays: 1, reorderPoint: 2, unit: 'PC', baseQuantity: 5, lastWeekConsumption: 4 },
       ],
       // 現在の在庫数
       currentInventory: {
@@ -66,12 +66,12 @@ export const useStore = create<StoreState>()(
       
       // アプリの設定
       appSettings: {
-        aiStrategy: 'balanced',
-        locationType: 'other',
+        aiStrategy: 'loss-zero',
+        locationType: 'tourist',
         requirePinForMaster: false,
         autoOrderEnabled: false,
         autoOrderTime: '15:00',
-        targetCostRate: 30,
+        targetCostRate: 28,
       },
       
       updateInventory: (productId, quantity) => set((state) => ({
@@ -115,7 +115,7 @@ export const useStore = create<StoreState>()(
       })
     }),
     {
-      name: 'loss-zero-storage-v4', // LocalStorageのキーを変更してキャッシュをクリア
+      name: 'loss-zero-storage-v5', // LocalStorageのキーを変更してキャッシュをクリア
     }
   )
 );

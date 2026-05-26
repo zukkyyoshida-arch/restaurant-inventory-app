@@ -229,27 +229,60 @@ const InventoryInput = ({ setActiveTab }: { setActiveTab: (tab: string) => void 
 // ==========================================
 const ProductMaster = () => {
   const { products, addProduct, editProduct } = useStore();
+  const [modalType, setModalType] = useState<'add' | 'edit' | null>(null);
+  const [editId, setEditId] = useState<string | null>(null);
+  const [inputValue, setInputValue] = useState('');
   
-  const handleAdd = () => {
-    const name = prompt("追加する新しい商品名を入力してください:");
-    if (name) {
-      addProduct({ name, unit: '個', baseQuantity: 10, lastWeekConsumption: 0 });
-      alert(`「${name}」を商品マスタに追加しました！`);
-    }
+  const openAdd = () => {
+    setInputValue('');
+    setModalType('add');
   };
 
-  const handleEdit = (id: string, currentName: string) => {
-    const newName = prompt("商品名の変更:", currentName);
-    if (newName && newName !== currentName) {
-      editProduct(id, newName);
+  const openEdit = (id: string, currentName: string) => {
+    setEditId(id);
+    setInputValue(currentName);
+    setModalType('edit');
+  };
+
+  const handleSubmit = () => {
+    if (!inputValue.trim()) return;
+    if (modalType === 'add') {
+      addProduct({ name: inputValue, unit: '個', baseQuantity: 10, lastWeekConsumption: 0 });
+    } else if (modalType === 'edit' && editId) {
+      editProduct(editId, inputValue);
     }
+    setModalType(null);
   };
 
   return (
     <div className="product-master">
+      {modalType && (
+        <div style={{
+          position: 'fixed', top: 0, left: 0, right: 0, bottom: 0,
+          backgroundColor: 'rgba(0,0,0,0.5)', zIndex: 100,
+          display: 'flex', justifyContent: 'center', alignItems: 'center', padding: '1rem'
+        }}>
+          <div className="card" style={{ width: '100%', maxWidth: '350px', margin: '0 auto' }}>
+            <h3 style={{ marginBottom: '1rem' }}>{modalType === 'add' ? '新しい商品を追加' : '商品名の編集'}</h3>
+            <input 
+              type="text" 
+              value={inputValue} 
+              onChange={(e) => setInputValue(e.target.value)}
+              style={{ width: '100%', padding: '0.75rem', marginBottom: '1rem', border: '1px solid var(--border-color)', borderRadius: '0.5rem', fontSize: '1rem' }}
+              placeholder="商品名を入力"
+              autoFocus
+            />
+            <div style={{ display: 'flex', gap: '0.5rem' }}>
+              <button className="btn btn-outline" style={{ flex: 1, padding: '0.5rem' }} onClick={() => setModalType(null)}>キャンセル</button>
+              <button className="btn btn-primary" style={{ flex: 1, padding: '0.5rem' }} onClick={handleSubmit}>保存する</button>
+            </div>
+          </div>
+        </div>
+      )}
+
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
         <h2 style={{ fontSize: '1.125rem' }}>商品マスタ管理</h2>
-        <button className="btn btn-primary" style={{ padding: '0.5rem 1rem', fontSize: '0.875rem', width: 'auto' }} onClick={handleAdd}>
+        <button className="btn btn-primary" style={{ padding: '0.5rem 1rem', fontSize: '0.875rem', width: 'auto' }} onClick={openAdd}>
           ＋ 新規追加
         </button>
       </div>
@@ -265,7 +298,7 @@ const ProductMaster = () => {
               <p style={{ marginTop: '0.25rem', fontSize: '0.875rem' }}>単位: {p.unit} / 基準在庫: {p.baseQuantity}</p>
             </div>
             <div className="item-action">
-              <button className="btn btn-outline" style={{ padding: '0.25rem 0.75rem', fontSize: '0.75rem', width: 'auto' }} onClick={() => handleEdit(p.id, p.name)}>編集</button>
+              <button className="btn btn-outline" style={{ padding: '0.25rem 0.75rem', fontSize: '0.75rem', width: 'auto', pointerEvents: 'auto' }} onClick={() => openEdit(p.id, p.name)}>編集</button>
             </div>
           </div>
         ))}

@@ -37,24 +37,41 @@ const Dashboard = () => {
         </button>
       </div>
 
-      <h2 style={{ fontSize: '1.125rem', marginBottom: '0.75rem', marginTop: '1.5rem' }}>本日の発注リスト</h2>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.75rem', marginTop: '1.5rem' }}>
+        <h2 style={{ fontSize: '1.125rem' }}>本日の発注リスト</h2>
+        <span style={{ fontSize: '0.75rem', color: 'var(--text-secondary)' }}>AI推奨値</span>
+      </div>
+      
       <div className="card" style={{ padding: '0' }}>
-        <div className="list-item" style={{ padding: '1rem' }}>
-          <div className="item-info">
-            <h3>キャベツ</h3>
-            <p>現在: 1玉 / 基準: 5玉</p>
+        <div className="list-item" style={{ padding: '1rem', flexWrap: 'wrap' }}>
+          <div className="item-info" style={{ width: '100%', marginBottom: '0.75rem' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              <h3 style={{ fontSize: '1.1rem' }}>キャベツ (玉)</h3>
+              <span className="badge badge-warning" style={{ backgroundColor: '#e0e7ff', color: '#4338ca' }}>先週同曜日の消費: 5玉</span>
+            </div>
+            <p style={{ marginTop: '0.25rem' }}>現在の在庫: 1玉 (基準: 5玉)</p>
           </div>
-          <div className="item-action">
-            <span style={{ fontWeight: '600', color: 'var(--primary-color)' }}>発注: 4玉</span>
+          <div className="item-action" style={{ width: '100%', justifyContent: 'flex-end', borderTop: '1px dashed var(--border-color)', paddingTop: '0.75rem' }}>
+            <span style={{ fontSize: '0.875rem', marginRight: 'auto', fontWeight: '500' }}>発注量:</span>
+            <button className="qty-btn">-</button>
+            <span className="qty-display" style={{ color: 'var(--primary-color)' }}>4</span>
+            <button className="qty-btn">+</button>
           </div>
         </div>
-        <div className="list-item" style={{ padding: '1rem' }}>
-          <div className="item-info">
-            <h3>ビール（樽）</h3>
-            <p>現在: 1樽 / 基準: 3樽</p>
+        
+        <div className="list-item" style={{ padding: '1rem', flexWrap: 'wrap' }}>
+          <div className="item-info" style={{ width: '100%', marginBottom: '0.75rem' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              <h3 style={{ fontSize: '1.1rem' }}>ビール（樽）</h3>
+              <span className="badge badge-warning" style={{ backgroundColor: '#e0e7ff', color: '#4338ca' }}>先週同曜日の消費: 4樽</span>
+            </div>
+            <p style={{ marginTop: '0.25rem' }}>現在の在庫: 1樽 (基準: 3樽)</p>
           </div>
-          <div className="item-action">
-            <span style={{ fontWeight: '600', color: 'var(--primary-color)' }}>発注: 2樽</span>
+          <div className="item-action" style={{ width: '100%', justifyContent: 'flex-end', borderTop: '1px dashed var(--border-color)', paddingTop: '0.75rem' }}>
+            <span style={{ fontSize: '0.875rem', marginRight: 'auto', fontWeight: '500' }}>発注量:</span>
+            <button className="qty-btn">-</button>
+            <span className="qty-display" style={{ color: 'var(--primary-color)' }}>2</span>
+            <button className="qty-btn">+</button>
           </div>
         </div>
       </div>

@@ -22,7 +22,7 @@ const getWeatherInfo = (code: number) => {
 // ==========================================
 // Dashboard Component
 // ==========================================
-const Dashboard = ({ setActiveTab }: { setActiveTab: (tab: string) => void }) => {
+const Dashboard = () => {
   const { products, currentInventory, orderQuantities, updateOrderQuantity, calculateRecommendedOrder, clearOrders } = useStore();
   const [weather, setWeather] = useState<WeatherData | null>(null);
   const [loading, setLoading] = useState(true);
@@ -376,7 +376,7 @@ function App() {
       </header>
 
       <main className="main-content">
-        {activeTab === 'dashboard' && <Dashboard setActiveTab={setActiveTab} />}
+        {activeTab === 'dashboard' && <Dashboard />}
         {activeTab === 'inventory' && <InventoryInput setActiveTab={setActiveTab} />}
         {activeTab === 'products' && <ProductMaster />}
         {activeTab === 'settings' && <Settings setActiveTab={setActiveTab} />}

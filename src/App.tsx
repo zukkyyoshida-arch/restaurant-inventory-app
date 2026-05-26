@@ -231,25 +231,30 @@ const ProductMaster = () => {
   const { products, addProduct, editProduct } = useStore();
   const [modalType, setModalType] = useState<'add' | 'edit' | null>(null);
   const [editId, setEditId] = useState<string | null>(null);
-  const [inputValue, setInputValue] = useState('');
+  const [formData, setFormData] = useState<any>({});
   
   const openAdd = () => {
-    setInputValue('');
+    setFormData({
+      name: '', officialName: '', category: '', storageLocation: '', supplier: '', spec: '', unitPrice: 0, leadTimeDays: 1, reorderPoint: 0, unit: '個', baseQuantity: 10, lastWeekConsumption: 0
+    });
     setModalType('add');
   };
 
-  const openEdit = (id: string, currentName: string) => {
-    setEditId(id);
-    setInputValue(currentName);
+  const openEdit = (product: any) => {
+    setEditId(product.id);
+    setFormData(product);
     setModalType('edit');
   };
 
   const handleSubmit = () => {
-    if (!inputValue.trim()) return;
+    if (!formData.name?.trim()) {
+      alert('「現場の呼び名」は必須です');
+      return;
+    }
     if (modalType === 'add') {
-      addProduct({ name: inputValue, unit: '個', baseQuantity: 10, lastWeekConsumption: 0 });
+      addProduct(formData);
     } else if (modalType === 'edit' && editId) {
-      editProduct(editId, inputValue);
+      editProduct(editId, formData);
     }
     setModalType(null);
   };
@@ -262,17 +267,53 @@ const ProductMaster = () => {
           backgroundColor: 'rgba(0,0,0,0.5)', zIndex: 100,
           display: 'flex', justifyContent: 'center', alignItems: 'center', padding: '1rem'
         }}>
-          <div className="card" style={{ width: '100%', maxWidth: '350px', margin: '0 auto' }}>
-            <h3 style={{ marginBottom: '1rem' }}>{modalType === 'add' ? '新しい商品を追加' : '商品名の編集'}</h3>
-            <input 
-              type="text" 
-              value={inputValue} 
-              onChange={(e) => setInputValue(e.target.value)}
-              style={{ width: '100%', padding: '0.75rem', marginBottom: '1rem', border: '1px solid var(--border-color)', borderRadius: '0.5rem', fontSize: '1rem' }}
-              placeholder="商品名を入力"
-              autoFocus
-            />
-            <div style={{ display: 'flex', gap: '0.5rem' }}>
+          <div className="card" style={{ width: '100%', maxWidth: '380px', margin: '0 auto', maxHeight: '90vh', display: 'flex', flexDirection: 'column' }}>
+            <h3 style={{ marginBottom: '1rem' }}>{modalType === 'add' ? '新しい商品を追加' : '商品情報の編集'}</h3>
+            <div style={{ overflowY: 'auto', flex: 1, paddingRight: '0.5rem', marginBottom: '1rem' }}>
+              <div style={{ marginBottom: '0.75rem' }}>
+                <label style={{ display: 'block', fontSize: '0.75rem', color: 'var(--text-secondary)' }}>現場の呼び名 (必須)</label>
+                <input type="text" value={formData.name || ''} onChange={e => setFormData({...formData, name: e.target.value})} style={{ width: '100%', padding: '0.5rem', border: '1px solid var(--border-color)', borderRadius: '4px' }} placeholder="例: ポテト" />
+              </div>
+              <div style={{ marginBottom: '0.75rem' }}>
+                <label style={{ display: 'block', fontSize: '0.75rem', color: 'var(--text-secondary)' }}>業者向け正式名称</label>
+                <input type="text" value={formData.officialName || ''} onChange={e => setFormData({...formData, officialName: e.target.value})} style={{ width: '100%', padding: '0.5rem', border: '1px solid var(--border-color)', borderRadius: '4px' }} placeholder="例: ラムウェストン..." />
+              </div>
+              <div style={{ display: 'flex', gap: '0.5rem', marginBottom: '0.75rem' }}>
+                <div style={{ flex: 1 }}>
+                  <label style={{ display: 'block', fontSize: '0.75rem', color: 'var(--text-secondary)' }}>発注単位</label>
+                  <input type="text" value={formData.unit || ''} onChange={e => setFormData({...formData, unit: e.target.value})} style={{ width: '100%', padding: '0.5rem', border: '1px solid var(--border-color)', borderRadius: '4px' }} placeholder="例: PC" />
+                </div>
+                <div style={{ flex: 1 }}>
+                  <label style={{ display: 'block', fontSize: '0.75rem', color: 'var(--text-secondary)' }}>基準在庫</label>
+                  <input type="number" value={formData.baseQuantity || 0} onChange={e => setFormData({...formData, baseQuantity: Number(e.target.value)})} style={{ width: '100%', padding: '0.5rem', border: '1px solid var(--border-color)', borderRadius: '4px' }} />
+                </div>
+              </div>
+              <div style={{ display: 'flex', gap: '0.5rem', marginBottom: '0.75rem' }}>
+                <div style={{ flex: 1 }}>
+                  <label style={{ display: 'block', fontSize: '0.75rem', color: 'var(--text-secondary)' }}>保管場所</label>
+                  <input type="text" value={formData.storageLocation || ''} onChange={e => setFormData({...formData, storageLocation: e.target.value})} style={{ width: '100%', padding: '0.5rem', border: '1px solid var(--border-color)', borderRadius: '4px' }} placeholder="例: 冷蔵庫A" />
+                </div>
+                <div style={{ flex: 1 }}>
+                  <label style={{ display: 'block', fontSize: '0.75rem', color: 'var(--text-secondary)' }}>取引先</label>
+                  <input type="text" value={formData.supplier || ''} onChange={e => setFormData({...formData, supplier: e.target.value})} style={{ width: '100%', padding: '0.5rem', border: '1px solid var(--border-color)', borderRadius: '4px' }} placeholder="例: (株)久世" />
+                </div>
+              </div>
+              <div style={{ marginBottom: '0.75rem' }}>
+                <label style={{ display: 'block', fontSize: '0.75rem', color: 'var(--text-secondary)' }}>規格・入数</label>
+                <input type="text" value={formData.spec || ''} onChange={e => setFormData({...formData, spec: e.target.value})} style={{ width: '100%', padding: '0.5rem', border: '1px solid var(--border-color)', borderRadius: '4px' }} placeholder="例: 4LB・6/PC" />
+              </div>
+              <div style={{ display: 'flex', gap: '0.5rem', marginBottom: '0.75rem' }}>
+                <div style={{ flex: 1 }}>
+                  <label style={{ display: 'block', fontSize: '0.75rem', color: 'var(--text-secondary)' }}>仕入単価(円)</label>
+                  <input type="number" value={formData.unitPrice || 0} onChange={e => setFormData({...formData, unitPrice: Number(e.target.value)})} style={{ width: '100%', padding: '0.5rem', border: '1px solid var(--border-color)', borderRadius: '4px' }} />
+                </div>
+                <div style={{ flex: 1 }}>
+                  <label style={{ display: 'block', fontSize: '0.75rem', color: 'var(--text-secondary)' }}>発注点</label>
+                  <input type="number" value={formData.reorderPoint || 0} onChange={e => setFormData({...formData, reorderPoint: Number(e.target.value)})} style={{ width: '100%', padding: '0.5rem', border: '1px solid var(--border-color)', borderRadius: '4px' }} />
+                </div>
+              </div>
+            </div>
+            <div style={{ display: 'flex', gap: '0.5rem', marginTop: 'auto' }}>
               <button className="btn btn-outline" style={{ flex: 1, padding: '0.5rem' }} onClick={() => setModalType(null)}>キャンセル</button>
               <button className="btn btn-primary" style={{ flex: 1, padding: '0.5rem' }} onClick={handleSubmit}>保存する</button>
             </div>
@@ -298,7 +339,7 @@ const ProductMaster = () => {
               <p style={{ marginTop: '0.25rem', fontSize: '0.875rem' }}>単位: {p.unit} / 基準在庫: {p.baseQuantity}</p>
             </div>
             <div className="item-action">
-              <button className="btn btn-outline" style={{ padding: '0.25rem 0.75rem', fontSize: '0.75rem', width: 'auto', pointerEvents: 'auto' }} onClick={() => openEdit(p.id, p.name)}>編集</button>
+              <button className="btn btn-outline" style={{ padding: '0.25rem 0.75rem', fontSize: '0.75rem', width: 'auto', pointerEvents: 'auto' }} onClick={() => openEdit(p)}>詳細・編集</button>
             </div>
           </div>
         ))}

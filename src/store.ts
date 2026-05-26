@@ -18,6 +18,15 @@ export interface Product {
   expiresInDays?: number; // 消費期限までの日数 (nullなら無し)
 }
 
+export interface AppSettings {
+  aiStrategy: 'loss-zero' | 'balanced' | 'avoid-shortage';
+  locationType: 'office' | 'residential' | 'tourist' | 'other';
+  requirePinForMaster: boolean;
+  autoOrderEnabled: boolean;
+  autoOrderTime: string;
+  targetCostRate: number;
+}
+
 interface StoreState {
   products: Product[];
   currentInventory: Record<string, number>;
@@ -29,6 +38,8 @@ interface StoreState {
   editProduct: (id: string, updatedData: Partial<Product>) => void;
   clearOrders: () => void;
   resetAll: () => void;
+  appSettings: AppSettings;
+  updateSettings: (newSettings: Partial<AppSettings>) => void;
 }
 
 export const useStore = create<StoreState>()(
@@ -52,6 +63,16 @@ export const useStore = create<StoreState>()(
       },
       // ユーザーが調整した発注量（初期状態は空、必要に応じて計算される）
       orderQuantities: {},
+      
+      // アプリの設定
+      appSettings: {
+        aiStrategy: 'balanced',
+        locationType: 'other',
+        requirePinForMaster: false,
+        autoOrderEnabled: false,
+        autoOrderTime: '15:00',
+        targetCostRate: 30,
+      },
       
       updateInventory: (productId, quantity) => set((state) => ({
         currentInventory: { ...state.currentInventory, [productId]: Math.max(0, quantity) }
@@ -84,13 +105,17 @@ export const useStore = create<StoreState>()(
       
       clearOrders: () => set({ orderQuantities: {} }),
       
+      updateSettings: (newSettings) => set((state) => ({
+        appSettings: { ...state.appSettings, ...newSettings }
+      })),
+
       resetAll: () => set({
         currentInventory: {},
         orderQuantities: {}
       })
     }),
     {
-      name: 'loss-zero-storage-v3', // LocalStorageのキーを変更してキャッシュをクリア
+      name: 'loss-zero-storage-v4', // LocalStorageのキーを変更してキャッシュをクリア
     }
   )
 );

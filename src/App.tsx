@@ -23,7 +23,7 @@ const getWeatherInfo = (code: number) => {
 // Dashboard Component
 // ==========================================
 const Dashboard = () => {
-  const { products, currentInventory, orderQuantities, updateOrderQuantity, calculateRecommendedOrder, clearOrders } = useStore();
+  const { products, currentInventory, orderQuantities, updateOrderQuantity, calculateRecommendedOrder, clearOrders, appSettings } = useStore();
   const [weather, setWeather] = useState<WeatherData | null>(null);
   const [loading, setLoading] = useState(true);
 
@@ -69,6 +69,16 @@ const Dashboard = () => {
 
   return (
     <div className="dashboard">
+      <div style={{ display: 'flex', gap: '0.5rem', marginBottom: '1rem', flexWrap: 'wrap' }}>
+        <span className="badge" style={{ backgroundColor: 'var(--primary-color)', color: 'white' }}>🎯 目標原価率: {appSettings.targetCostRate}%</span>
+        <span className="badge" style={{ backgroundColor: '#e0e7ff', color: '#4338ca' }}>
+          🧠 AI戦略: {appSettings.aiStrategy === 'loss-zero' ? '廃棄ゼロ優先' : appSettings.aiStrategy === 'balanced' ? 'バランス重視' : '品切れ回避優先'}
+        </span>
+        {appSettings.autoOrderEnabled && (
+          <span className="badge" style={{ backgroundColor: '#dcfce7', color: '#166534' }}>🚀 自動発注: {appSettings.autoOrderTime}に実行</span>
+        )}
+      </div>
+
       <div className="card">
         <div className="card-title"><span>🌦️</span> AI需要予測（明日の天気）</div>
         {loading ? (
@@ -228,12 +238,21 @@ const InventoryInput = ({ setActiveTab }: { setActiveTab: (tab: string) => void 
 // ProductMaster Component
 // ==========================================
 const ProductMaster = () => {
-  const { products, addProduct, editProduct } = useStore();
+  const { products, addProduct, editProduct, appSettings } = useStore();
   const [modalType, setModalType] = useState<'add' | 'edit' | null>(null);
   const [editId, setEditId] = useState<string | null>(null);
   const [formData, setFormData] = useState<any>({});
   
+  const handlePinCheck = () => {
+    if (!appSettings.requirePinForMaster) return true;
+    const pin = prompt('【ロックされています】\n店長用の4桁のPINコードを入力してください\n（※デモ用: "1234"で解除できます）');
+    if (pin === '1234') return true;
+    if (pin !== null) alert('PINコードが違います。');
+    return false;
+  };
+
   const openAdd = () => {
+    if (!handlePinCheck()) return;
     setFormData({
       name: '', officialName: '', category: '', storageLocation: '', supplier: '', spec: '', unitPrice: 0, leadTimeDays: 1, reorderPoint: 0, unit: '個', baseQuantity: 10, lastWeekConsumption: 0
     });
@@ -241,6 +260,7 @@ const ProductMaster = () => {
   };
 
   const openEdit = (product: any) => {
+    if (!handlePinCheck()) return;
     setEditId(product.id);
     setFormData(product);
     setModalType('edit');
@@ -352,50 +372,125 @@ const ProductMaster = () => {
 // Settings Component
 // ==========================================
 const Settings = ({ setActiveTab }: { setActiveTab: (tab: string) => void }) => {
-  const { resetAll } = useStore();
+  const { appSettings, updateSettings, resetAll } = useStore();
 
   const handleLogout = () => {
-    if (confirm("本当にログアウトしますか？\n（デモとして保存されたデータがすべてリセットされます）")) {
+    if (confirm("本当にリセットしますか？\n（デモとして保存されたデータがすべて初期化されます）")) {
       resetAll();
       alert("データを初期化しました。");
       setActiveTab('dashboard');
     }
   };
 
-  const handleNotImplemented = (feature: string) => {
-    alert(`「${feature}」設定画面は現在開発中（モック）です。`);
-  };
-
   return (
-    <div className="settings">
-      <h2 style={{ fontSize: '1.125rem', marginBottom: '1rem' }}>設定</h2>
+    <div className="settings" style={{ paddingBottom: '2rem' }}>
+      <h2 style={{ fontSize: '1.125rem', marginBottom: '1rem' }}>詳細設定</h2>
       
-      <div className="card" style={{ padding: '0', marginBottom: '1rem' }}>
-        <div className="list-item" style={{ padding: '1rem', cursor: 'pointer' }} onClick={() => handleNotImplemented('店舗情報')}>
-          <div className="item-info">
-            <h3>店舗情報設定</h3>
-            <p>店舗名、住所、電話番号の変更</p>
-          </div>
-          <span style={{ color: 'var(--text-secondary)' }}>▶︎</span>
+      <div className="card" style={{ marginBottom: '1.5rem', padding: '1rem' }}>
+        <h3 style={{ fontSize: '1rem', marginBottom: '1rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+          <span>🧠</span> AI・需要予測設定
+        </h3>
+        <div style={{ marginBottom: '1rem' }}>
+          <label style={{ display: 'block', fontSize: '0.875rem', marginBottom: '0.5rem', fontWeight: 500 }}>AIの戦略方針</label>
+          <select 
+            style={{ width: '100%', padding: '0.5rem', border: '1px solid var(--border-color)', borderRadius: '4px' }}
+            value={appSettings.aiStrategy}
+            onChange={(e) => updateSettings({ aiStrategy: e.target.value as any })}
+          >
+            <option value="loss-zero">廃棄ゼロを最優先（少なめに発注）</option>
+            <option value="balanced">バランス重視（デフォルト）</option>
+            <option value="avoid-shortage">品切れ回避を最優先（多めに発注）</option>
+          </select>
         </div>
-        <div className="list-item" style={{ padding: '1rem', cursor: 'pointer' }} onClick={() => handleNotImplemented('発注先連携')}>
-          <div className="item-info">
-            <h3>発注先連携</h3>
-            <p>仕入れ業者への自動FAX・メール送信設定</p>
-          </div>
-          <span style={{ color: 'var(--text-secondary)' }}>▶︎</span>
+        <div>
+          <label style={{ display: 'block', fontSize: '0.875rem', marginBottom: '0.5rem', fontWeight: 500 }}>店舗の立地特性（天気等の影響度）</label>
+          <select 
+            style={{ width: '100%', padding: '0.5rem', border: '1px solid var(--border-color)', borderRadius: '4px' }}
+            value={appSettings.locationType}
+            onChange={(e) => updateSettings({ locationType: e.target.value as any })}
+          >
+            <option value="office">オフィス街（土日・雨天で客数減）</option>
+            <option value="residential">住宅街（雨天でも安定）</option>
+            <option value="tourist">観光地（天候・イベントに大きく依存）</option>
+            <option value="other">その他</option>
+          </select>
         </div>
-        <div className="list-item" style={{ padding: '1rem', borderBottom: 'none', cursor: 'pointer' }} onClick={() => handleNotImplemented('通知設定')}>
-          <div className="item-info">
-            <h3>通知設定</h3>
-            <p>LINE・メールへのアラート通知</p>
+      </div>
+
+      <div className="card" style={{ marginBottom: '1.5rem', padding: '1rem' }}>
+        <h3 style={{ fontSize: '1rem', marginBottom: '1rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+          <span>🔒</span> セキュリティ・権限
+        </h3>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+          <div>
+            <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: 500 }}>商品マスタの編集ロック</label>
+            <p style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', marginTop: '0.25rem' }}>オンにすると追加・編集時にPINを要求します</p>
           </div>
-          <span style={{ color: 'var(--text-secondary)' }}>▶︎</span>
+          <label style={{ position: 'relative', display: 'inline-block', width: '40px', height: '24px' }}>
+            <input 
+              type="checkbox" 
+              style={{ opacity: 0, width: 0, height: 0 }}
+              checked={appSettings.requirePinForMaster}
+              onChange={(e) => updateSettings({ requirePinForMaster: e.target.checked })}
+            />
+            <span style={{ position: 'absolute', cursor: 'pointer', top: 0, left: 0, right: 0, bottom: 0, backgroundColor: appSettings.requirePinForMaster ? 'var(--primary-color)' : '#ccc', borderRadius: '24px', transition: '.4s' }}>
+              <span style={{ position: 'absolute', content: '""', height: '18px', width: '18px', left: appSettings.requirePinForMaster ? '19px' : '3px', bottom: '3px', backgroundColor: 'white', borderRadius: '50%', transition: '.4s' }}></span>
+            </span>
+          </label>
+        </div>
+      </div>
+
+      <div className="card" style={{ marginBottom: '1.5rem', padding: '1rem' }}>
+        <h3 style={{ fontSize: '1rem', marginBottom: '1rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+          <span>🚀</span> 完全自動発注（オートパイロット）
+        </h3>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
+          <div>
+            <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: 500 }}>自動発注を有効にする</label>
+            <p style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', marginTop: '0.25rem' }}>設定時間にAIの推奨値を自動で確定します</p>
+          </div>
+          <label style={{ position: 'relative', display: 'inline-block', width: '40px', height: '24px' }}>
+            <input 
+              type="checkbox" 
+              style={{ opacity: 0, width: 0, height: 0 }}
+              checked={appSettings.autoOrderEnabled}
+              onChange={(e) => updateSettings({ autoOrderEnabled: e.target.checked })}
+            />
+            <span style={{ position: 'absolute', cursor: 'pointer', top: 0, left: 0, right: 0, bottom: 0, backgroundColor: appSettings.autoOrderEnabled ? 'var(--primary-color)' : '#ccc', borderRadius: '24px', transition: '.4s' }}>
+              <span style={{ position: 'absolute', content: '""', height: '18px', width: '18px', left: appSettings.autoOrderEnabled ? '19px' : '3px', bottom: '3px', backgroundColor: 'white', borderRadius: '50%', transition: '.4s' }}></span>
+            </span>
+          </label>
+        </div>
+        {appSettings.autoOrderEnabled && (
+          <div style={{ padding: '1rem', backgroundColor: 'var(--bg-color)', borderRadius: '0.5rem' }}>
+            <label style={{ display: 'block', fontSize: '0.875rem', marginBottom: '0.5rem', fontWeight: 500 }}>毎日の実行時間</label>
+            <input 
+              type="time" 
+              style={{ width: '100%', padding: '0.5rem', border: '1px solid var(--border-color)', borderRadius: '4px' }}
+              value={appSettings.autoOrderTime}
+              onChange={(e) => updateSettings({ autoOrderTime: e.target.value })}
+            />
+          </div>
+        )}
+      </div>
+
+      <div className="card" style={{ marginBottom: '1.5rem', padding: '1rem' }}>
+        <h3 style={{ fontSize: '1rem', marginBottom: '1rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+          <span>🎯</span> 目標（KPI）設定
+        </h3>
+        <div>
+          <label style={{ display: 'block', fontSize: '0.875rem', marginBottom: '0.5rem', fontWeight: 500 }}>月間の目標原価率 (%)</label>
+          <input 
+            type="number" 
+            style={{ width: '100%', padding: '0.5rem', border: '1px solid var(--border-color)', borderRadius: '4px' }}
+            value={appSettings.targetCostRate}
+            onChange={(e) => updateSettings({ targetCostRate: Number(e.target.value) })}
+          />
         </div>
       </div>
       
-      <button className="btn btn-outline" style={{ color: 'var(--danger-color)', borderColor: 'var(--danger-color)' }} onClick={handleLogout}>
-        ログアウト
+      <button className="btn btn-outline" style={{ color: 'var(--danger-color)', borderColor: 'var(--danger-color)', width: '100%' }} onClick={handleLogout}>
+        すべてのデータをリセット (ログアウト)
       </button>
     </div>
   );
